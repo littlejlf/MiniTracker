@@ -24,7 +24,7 @@ import { IdRecorderComplex, IdRecorder } from "../../util/idGenerator";
 
 export { parseStatement, parseStatements };
 
-let tempVarIdRecorder = IdRecorderComplex.create();
+export let tempVarIdRecorder = IdRecorderComplex.create();
 
 interface StatementTypeToParserMap {
   [type: string]: (

@@ -1,0 +1,18 @@
+{
+  "pages": [
+    "pages/page1/page1"
+  ],
+  "permission": {
+    "scope.userLocation": {
+      "desc": "this is only used for demonstrating purpose"
+    }
+  },
+  "window": {
+    "backgroundTextStyle": "light",
+    "navigationBarBackgroundColor": "#fff",
+    "navigationBarTitleText": "Weixin",
+    "navigationBarTextStyle": "black"
+  },
+  "style": "v2",
+  "sitemapLocation": "sitemap.json"
+}

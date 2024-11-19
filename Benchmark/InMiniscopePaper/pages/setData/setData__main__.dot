@@ -1,0 +1,12 @@
+// cfg
+digraph control_flow_graph {
+    node [shape = doublecircle] 2
+    node [shape = circle]
+    
+    // Unconditional edges
+    1 -> 24 [label = " __PageData__.canClick = true"]
+    24 -> 25 [label = " __PageParameter__.data = __PageData__"]
+    25 -> 26 [label = " __PageParameter__.onshow = $$func1"]
+    26 -> 27 [label = " __PageParameter__.onButtonClick = $$func4"]
+    27 -> 2 [label = " temp4 = Page(__PageParameter__)"]
+}

@@ -24,7 +24,9 @@ export class Taint {
   propertyStack: Array<ESTree.Identifier>;
   nextTaints: Array<Taint>;
   endsAtSource: boolean;
-
+  auth?:string;
+  url?:string;
+  isVariable?:any;
   constructor(
     data: ESTree.Identifier | ESTree.MemberExpression | ESTree.Literal,
     type: TaintType,
@@ -88,17 +90,20 @@ export class TaintFlow {
   target: Taint;
   funcName: string;
   label: string;
+    impath: any;
 
   constructor(
     source: Taint | null,
     target: Taint,
     funcName: string,
-    label: string
+    label: string,
+    impath?: any
   ) {
     this.source = source;
     this.target = target;
     this.funcName = funcName;
     this.label = label;
+    this.impath = impath;
   }
 }
 

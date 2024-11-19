@@ -2,7 +2,7 @@ import * as fs from 'fs';
 import { Config } from '../../utils/config';
 import { logger } from '../../utils/logHelper';
 
-let sourceFunctions: string[];
+export let sourceFunctions: string[];
 let sinkFunctions: string[];
 let sourceIdentifiers: string[];
 

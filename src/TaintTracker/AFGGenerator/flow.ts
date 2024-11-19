@@ -32,6 +32,8 @@ export interface FlowEdge {
   label: string;
   data: ESTree.Expression;
   loc?:SourceLocation;
+  promise?:any;
+  hinderData?:any;
 }
 
 export class FlowNode {
@@ -52,7 +54,9 @@ export class FlowNode {
     label: string,
     edgeData: ESTree.Expression | ESTree.Statement,
     edgeType: EdgeType,
-    loc?: SourceLocation
+    loc?: SourceLocation,
+    promise?:any,
+    hinderData?:any
   ): FlowNode {
     let edge: FlowEdge = {
       source: node,
@@ -61,6 +65,8 @@ export class FlowNode {
       label: label,
       data: edgeData,
       loc: loc,
+      promise:promise,
+      hinderData:hinderData
     };
 
     node.outgoingEdges.push(edge);
@@ -74,9 +80,11 @@ export class FlowNode {
     node: FlowNode,
     label: string,
     edgeData: ESTree.Expression | ESTree.Statement,
-    loc?: SourceLocation
+    loc?: SourceLocation,
+    promise?:any,
+    hinderData?:any
   ): FlowNode {
-    return this.basicAppendTo(node, label, edgeData, EdgeType.Normal,loc);
+    return this.basicAppendTo(node, label, edgeData, EdgeType.Normal,loc,promise,hinderData);
   }
 
   appendConditionallyTo(

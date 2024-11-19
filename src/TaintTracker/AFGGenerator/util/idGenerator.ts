@@ -1,3 +1,7 @@
+import {NodeType} from "../estree";
+import * as ESTree from "../estree";
+import {stringify} from "../parser/expressions/stringifier";
+
 export interface IdGenerator {
   generateId: () => number;
 }
@@ -22,6 +26,9 @@ interface IdRecorder {
   storeSpecific: (expr: string, tempVarName: string) => void;
   overwrite: (original: string, current: string) => void;
   add: (original: string, current: string) => void;
+  findKeyByValue?:any
+  table?:{ [key: string]: string }
+  calculate?:any
 }
 
 let IdRecorderComplex = {
@@ -40,6 +47,7 @@ let IdRecorderComplex = {
     function _store(expr: string): void {
       ++id;
       idLookUpTable[expr] = `temp${id}`;
+      valuegen(expr)
     }
 
     function _storeSpecific(expr: string, tempVarName: string): void {
@@ -62,6 +70,61 @@ let IdRecorderComplex = {
         _store(current);
       }
     }
+    function findKeyByValue( value: string): string | undefined {
+
+      for (const key in idLookUpTable) {
+        if (idLookUpTable[key] === value) {
+          return key; // 找到对应键，返回
+        }
+      }
+      return undefined; // 如果没有匹配的值，返回 undefined
+    }
+    function valuegen(key:string){
+      let parts=key?.trim().split("=")
+      if (parts.length>=2){
+      idLookUpTable[parts[1].trim()]=parts[0].trim()}
+    }
+
+    function calculate(expr){
+      let table= idLookUpTable
+      let value
+      let objv
+      if (expr.type===NodeType.MemberExpression){
+        let member=expr.object as ESTree.MemberExpression
+        let mstr=stringify(member)
+        mstr=stringify(expr)
+        let propname=expr.property.name
+        value=expr.property.value
+        if (value)
+          return value
+        value=findKeyByValue(mstr)
+        if (!value){
+          if (member)
+          objv=calculate(member)
+          let jsonString = objv.replace(/\n/g, "").trim();
+
+          let obj = eval('(' + jsonString + ')');
+
+          value=obj[propname]
+
+        }
+        else {
+          return value
+        }
+
+
+      }
+      else if (expr.type===NodeType.Identifier){
+        let idname=expr.name
+
+        value=findKeyByValue(idname)
+      }
+      else if (expr.type===NodeType.Literal){
+        value=expr.value
+      }
+      return value
+
+    }
 
     return {
       isPageParam: false,
@@ -73,6 +136,9 @@ let IdRecorderComplex = {
       storeSpecific: _storeSpecific,
       overwrite: _overwrite,
       add: _add,
+      findKeyByValue: findKeyByValue,
+        table: idLookUpTable,
+      calculate: calculate
     };
   },
 };

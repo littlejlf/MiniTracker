@@ -10,14 +10,51 @@ import { mapReplacer } from '../../../utils/util';
 import { saveDataToFile } from '../../../utils/fileHelper';
 import { isAssignmentExpression, isCallExpression } from '../../AFGGenerator/estree';
 
-export function generateDataFlow(start: Taint): DataLeakage[] {
+export function generateDataFlow(start: Taint,isImplicit:Boolean=false): DataLeakage[] {
   const dfsManager = new Set<string>();
   const leakages = new Array<DataLeakage>();
   const taintStack = new Array<Taint>();
   if (start.nextTaints.length) {
-    taintDFS(start, taintStack, leakages, dfsManager);
+    if(isImplicit){
+      myTaintDFS(start, taintStack, leakages, dfsManager);
+    }else{
+      taintDFS(start, taintStack, leakages, dfsManager);
+    }
+  }
+  else {
+    if (isImplicit&&start.endsAtSource){
+        leakages.push({
+            source: start,
+            chain:[start],
+            sink: start,
+        });
+    }
   }
   return leakages;
+}
+function myTaintDFS(currentTaint: Taint,
+                    taintStack: Array<Taint>,
+                    leakages: Array<DataLeakage>,
+                    dfsManager: Set<string>){
+    taintStack.push(currentTaint);
+    dfsManager.add(currentTaint.uniqueName);
+    if (currentTaint.nextTaints.length&&!currentTaint.endsAtSource) {
+      for (const next of currentTaint.nextTaints) {
+        if (!dfsManager.has(next.uniqueName)) {
+          myTaintDFS(next, taintStack, leakages, dfsManager);
+        }
+      }
+    }
+    else {
+        leakages.push({
+            source: currentTaint,
+            chain: Array.from(taintStack).reverse(),
+            sink: taintStack[0],
+        });
+    }
+  taintStack.pop();
+  dfsManager.delete(currentTaint.uniqueName);
+
 }
 
 function taintDFS(
@@ -35,6 +72,7 @@ function taintDFS(
       }
     }
   }
+  //筛选出泄露的路径
   if (currentTaint.endsAtSource) {
     leakages.push({
       source: currentTaint,

@@ -1,0 +1,4 @@
+<view class="container">
+  <input type="number" placeholder="请输入手机号" bindinput="onInput" />
+  <button bindtap="onNavigate">前往下一页</button>
+</view>

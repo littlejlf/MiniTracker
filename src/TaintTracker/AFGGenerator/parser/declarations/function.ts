@@ -23,6 +23,7 @@ import {
 } from '../../flow';
 // import { getFunctionRelationships } from '../preprocessing/functionExpressionRewriter';
 import { logger } from '../../../../utils/logHelper';
+import {last_func, now_func} from '../../../../shared';
 
 export { parseFunctionDeclaration };
 
@@ -35,7 +36,8 @@ function parseFunctionDeclaration(
   let entryNode = context.createNode(NodeType.Entry);
   let successExitNode = context.createNode(NodeType.SuccessExit);
   let errorExitNode = context.createNode(NodeType.ErrorExit);
-
+  // @ts-ignore
+  now_func = functionDeclaration.id.name;
   let func: FlowFunction = {
     id: context.createFunctionId(),
     name: functionDeclaration.id.name,
@@ -96,8 +98,10 @@ function parseFunctionDeclaration(
   }
 
   context.functions.push(func);
-
+  // @ts-ignore
+  now_func=last_func
   return { normal: currentNode };
+
 }
 
 function explicitlyAssignParameterValues(

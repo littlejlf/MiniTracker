@@ -36,11 +36,13 @@ function traversePageData(page: Page, htmlFileInfo: HtmlFileInfo): string {
 
 export function transpilePage(page: Page) {
   const htmlFileInfo = parseHtmlFile(page.html);
+  page.htmlFileInfo = htmlFileInfo;
   saveDataToFile(page.dir + '-htmlInfo.json', JSON.stringify(htmlFileInfo));
+  //应该是对于高阶js语法的预处理
   page.js = traversePageData(page, htmlFileInfo);
   return page;
 }
-
+//测试对于js的预处理
 if (require.main === module) {
   const commandOption = commander();
   initConfig(commandOption);

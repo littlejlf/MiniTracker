@@ -259,6 +259,8 @@ export interface CatchClause extends Node {
 
 export interface Identifier extends Node, Expression {
   name: string;
+  scope?: string;
+  url?: string;
 }
 
 export interface Literal extends Node, Expression {

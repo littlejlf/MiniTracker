@@ -21,11 +21,11 @@ import {
 } from '../../../util/stringManip';
 import { ExpressionParser } from './interface';
 import { getIdentifier } from '../../util/identifierCreator';
-import { isIdentifier, isMemberExpression } from '../../estree';
+import {isIdentifier, isMemberExpression, NodeType} from '../../estree';
 import { logger } from '../../../../utils/logHelper';
+import {pagefun2caller, now_func, now_page, temp_page2url, v_bind_map, selfurl2navurl} from "../../../../shared";
 
 export { parseCallExpression };
-
 const parseCallExpression: ExpressionParser = function (
   callExpression: ESTree.CallExpression,
   currentNode: FlowNode,
@@ -53,6 +53,7 @@ const parseCallExpression: ExpressionParser = function (
     checkBackwardInclusion(stringify(callExpression.callee), 'setData') &&
     callExpression.arguments.length > 0
   ) {
+    let a=v_bind_map
     return parseSetData(callExpression, currentNode, context, idLookUpTable);
   }
 
@@ -65,8 +66,28 @@ const parseCallExpression: ExpressionParser = function (
   if (stringify(callExpression.callee) === 'Component') {
     idLookUpTable.isComponentParam = true;
   }
+  let url
+  let scope
   // parse arguments and replace current expr label
   for (let i = 0; i < callExpression.arguments.length; ++i) {
+    let sf=false
+    let nf=false
+    let fn=stringify(callExpression)
+    if (fn.includes('wx.navigateTo')){
+
+      // @ts-ignore
+      url= callExpression.arguments[i].properties.find((item)=>item.key.name==='url').value
+      url=idLookUpTable.calculate(url)
+      if (url)
+        nf=true
+    }
+
+    if (fn.includes('wx.authorize')){
+      // @ts-ignore
+      scope= callExpression.arguments[i].properties.find((item)=>item.key.name==='scope')?.value.value
+      if (scope)
+      sf=true
+    }
     currentNode = parseExpression(
       callExpression.arguments[i],
       currentNode,
@@ -77,7 +98,23 @@ const parseCallExpression: ExpressionParser = function (
       callExpression.arguments[i],
       idLookUpTable
     );
-  }
+    if (sf){
+      // @ts-ignore
+      callExpression.arguments[i].scope=scope
+    }
+    if (nf){
+      // @ts-ignore
+      callExpression.arguments[i].url=url
+      selfurl2navurl.push([now_page,url])
+    }
+    if (fn.includes('wx.navigateTo')) {
+      // @ts-ignore
+      //temp_page2url.set([now_page, callExpression.arguments[i].name], url)
+      temp_page2url.set(callExpression.arguments[i].name, url)
+      //selfurl2navurl.push([now_page,url])
+    }}
+  //temp_page2url.set([now_page,],url)
+
   // parse callee and replace current expr label
   let currentObjExpr = callExpression.callee;
   let currentPropExpr: ESTree.Expression;
@@ -103,6 +140,14 @@ const parseCallExpression: ExpressionParser = function (
   callExpression.callee = currentPropExpr
     ? createMemberExpression(currentObjExpr, currentPropExpr)
     : currentObjExpr;
+  let funcname=stringify(callExpression)
+  let value=pagefun2caller.get([now_page,funcname])
+  if (!value){//todo navi 去拿到真正的值
+  pagefun2caller.set([now_page,funcname],now_func)
+  }
+  else {
+    value.push(now_func)
+  }
   if (
     isMemberExpression(callExpression.callee) &&
     (isIdentifier(callExpression.callee.property, { name: 'then' }) ||
@@ -163,6 +208,7 @@ function parseSetData(
     );
   }
   if (arg0.type === ESTree.NodeType.ObjectExpression) {
+    let map= v_bind_map
     let dataObject = <ESTree.ObjectExpression>arg0;
     let i = 0;
     for (let data of dataObject.properties) {
@@ -197,13 +243,21 @@ function parseSetData(
         left: dataMember,
         right: data.value,
       });
+      let hinderData=null
+      // @ts-ignore
+      if(map.get(data.key.name)){
+        // @ts-ignore
+           hinderData=[data.key.name,map.get(data.key.name)]
+      }
       currentNode = context
         .createNode()
-        .appendTo(currentNode, stringify(dataAssignment), dataAssignment,setDataExpr.loc);
+        .appendTo(currentNode, stringify(dataAssignment), dataAssignment,setDataExpr.loc,undefined,hinderData);
+//todo
 
       ++i;
     }
   } else {
+    //todo 什么情况
     logger.warn(`args[0] of setData is not an object: ${stringify(arg0)}`);
     for (let i = 0; i < setDataExpr.arguments.length; ++i) {
       currentNode = parseExpression(
@@ -331,7 +385,10 @@ function parseThenOrCatch(
     left: createIdentifier(idLookUpTable.lookup(currentExprLabel)),
     right: callExpr,
   });
-
+  let promiseEdge=currentNode.incomingEdges.find((edge)=>edge.promise.cate==="promisefunc");
+  if (promiseEdge===undefined){
+    currentNode.incomingEdges[0].source.incomingEdges.find((edge)=>edge.promise.cate==="promisefunc");
+  }
   return context
     .createNode()
     .appendTo(
@@ -339,5 +396,7 @@ function parseThenOrCatch(
       stringify(tempVarAssignmentExpr),
       tempVarAssignmentExpr,
         callExpression.loc
-    );
+    ,
+        // @ts-ignore
+        { cate:callExpression.callee.property.name,exp:callExpression,promiseEdge: promiseEdge});
 }

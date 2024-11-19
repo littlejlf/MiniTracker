@@ -94,7 +94,7 @@
         "wx.getExtConfigSync",
         "wx.getExtConfig",
         "wx.getPhoneNumber",
-
+        "wx.authorize",
         "wx.input"
     ],
     "sinks": [
@@ -103,7 +103,7 @@
         "wx.sendSocketMessage",
         "wx.connectSocket",
         "SocketTask.send",
-
+        "wx.navigateTo",
         "wx.setStorageSync",
         "wx.setStorage",
         "wx.removeStorageSync",

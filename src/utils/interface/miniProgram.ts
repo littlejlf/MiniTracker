@@ -5,6 +5,7 @@ import { AliasMap } from '../../TaintTracker/functionAliasSearch/functionAliasMa
 import IdRecorder, { IdGenerator } from '../../TaintTracker/AFGGenerator/util/idGenerator';
 import { logger } from '../logHelper';
 import { Config } from '../config';
+import {HtmlFileInfo} from "../../PageAnalyzer/htmlParser/fileInfo/htmlFileInfo";
 
 export interface MiniProgramAppJSON {
   pages: Array<string>;
@@ -55,7 +56,7 @@ export class Page implements BasicJs {
   funcAliasMap: AliasMap;
   requireUtilNames: string[];
   moduleExportObj: ExportUnit;
-
+  htmlFileInfo?: HtmlFileInfo;
   constructor(
     name: string,
     dir: string,

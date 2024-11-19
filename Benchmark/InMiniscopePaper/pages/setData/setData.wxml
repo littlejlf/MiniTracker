@@ -1,0 +1,1 @@
+<button disabled={{canClick}} bindtap="onButtonClick">不可点击的按钮</button>

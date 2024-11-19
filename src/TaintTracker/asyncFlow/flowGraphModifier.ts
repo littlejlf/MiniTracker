@@ -91,7 +91,7 @@ function appendNewEdgeTo(
 
   for (let i = 0; i < precedingNode.outgoingEdges.length; ++i) {
     if (precedingNode.outgoingEdges[i].label === currentEdge.label) {
-      precedingNode.outgoingEdges[i] = currentEdge;
+      precedingNode.outgoingEdges[i] = currentEdge;//
     }
   }
   for (let i = 0; i < succeedingNode.incomingEdges.length; ++i) {

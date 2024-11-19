@@ -27,52 +27,12 @@ export function extraPasses(
 ) {
   const done = new Array<Styx.FlowEdge>();
   const context: ExtraPassContext = createExtraPassContext();
-  // const aliasHelper = new AliasHelper();
-  // const enclosingObjects = new Array<string>();
-  // for (const func of cfg.functions) {
-  //   for (const edge of func.flowGraph.edges) {
-  //     if (edge.type === Styx.EdgeType.Epsilon) continue;
-  //     if (edge.type === Styx.EdgeType.Normal) {
-  //       if (ESTree.isAssignmentExpression(edge.data)) {
-  //         if (
-  //           // Note: we assume that the LHS is also an identifier,
-  //           // in most cases this assumption should hold true.
-  //           ESTree.isIdentifier(edge.data.left) &&
-  //           ESTree.isIdentifier(edge.data.right, { name: 'this' })
-  //         ) {
-  //           logger.debug(`RHS is 'this' at ${edge.label} in ${func.name}`);
-  //           const aliases = funcAliasMap.getAllAliases(func.name);
-  //           for (const alias of aliases) {
-  //             if (alias.includes('.')) {
-  //               const enclosingObj = alias.split('.')[0];
-  //               logger.debug(`Enclosing Obj ${enclosingObj}`);
-  //               enclosingObjects.push(enclosingObj);
-  //               aliasHelper.worklist.push(
-  //                 new Alias(edge.data.left, edge, enclosingObj, [])
-  //               );
-  //               logger.debug(`Added LHS ${edge.data.left.name}`);
-  //             }
-  //           }
-  //         }
-  //       }
-  //     }
-  //   }
-  // }
-  // const objAliasMap = new AliasMap(enclosingObjects);
-  // while (aliasHelper.worklist.length) {
-  //   let current = aliasHelper.worklist.shift();
-  //   aliasHelper.done.push(current.uniqueName);
-  //   BFSAliasSearch(current, objAliasMap, aliasHelper);
-  // }
-
-  // for (const obj of enclosingObjects) {
-  //   logger.debug(`Obj: ${obj} -> ${objAliasMap.getAllAliases(obj)}`);
-  // }
-
   for (const func of cfg.functions) {
     for (const edge of func.flowGraph.edges) {
       if (edge.type === Styx.EdgeType.Epsilon) continue;
       if (edge.type === Styx.EdgeType.Normal) {
+        //赋值语句 且RHS是函数调用  或者new表达式 new好像不行
+        // TODO 那要是光是call 没有赋值呢 还是预处理会分配一个变量？
         if (edge.data.type === ESTree.NodeType.AssignmentExpression) {
           const assignmentExpr = edge.data as ESTree.AssignmentExpression;
           if (
@@ -89,10 +49,11 @@ export function extraPasses(
               const LHSIdentifier = assignmentExpr.left as ESTree.Identifier;
               for (const argument of callExpr.arguments) {
                 let argstring = stringify(argument);
+                //情况1 说明arg是一个函数
                 if (
                   funcAliasMap.getFunctionInfo(argstring) !== null
                 ) {
-                  // argument is function
+                  // case1 argument is function
                   appendCallExprTo(
                     edge,
                     funcAliasMap.getFunctionInfo(argstring),
@@ -103,6 +64,7 @@ export function extraPasses(
                   );
                 } else if (argstring !== 'wx' && argstring !== 'swan' && argstring !== '__PageParameter__') {
                   // argument's attributes are functions
+                  //todo 为什么能得出上面的结论？ (isMember(alias, argstring))在这里判断了 这里可以不可以对success fail做特殊的处理
                   for (const alias in funcAliasMap.aliasToName) {
                     if (isMember(alias, argstring)) {
                       appendCallExprTo(

@@ -1,4 +1,5 @@
 import { Config, Platform } from '../../utils/config';
+import {hander_page2widget, now_page} from "../../shared";
 
 
 function CheckInputTag(input: HTMLElement): boolean {
@@ -31,6 +32,7 @@ function CheckInputTag(input: HTMLElement): boolean {
   
   return false;
 }
+
 
 export function getBiBindData(body: HTMLElement): string[] {
   const inputTags = body.getElementsByTagName('input');
@@ -76,6 +78,7 @@ export function getInputEventHandlers(body: HTMLElement): string[] {
           handler = handler.substring(1,handler.length-1);
         }
         inputEventHandlers.push(handler);
+        hander_page2widget.set({"page":now_page,"handler":handler},inputTag.outerHTML)
       }
     }
   }
@@ -93,4 +96,56 @@ function getOpenTypeButton(body: HTMLElement, inputEventHandlers:string[]){
       inputEventHandlers.push(handler);
     }
   }
+}
+export function getNonClickableBindings(body: HTMLElement) {
+  const allElements = body.getElementsByTagName('*'); // 获取所有元素
+  //key 是绑定的变量，value 事件处理函数
+  const bindings =  new Map();
+
+
+  for (let i = 0; i < allElements.length; i++) {
+    const element = allElements[i];
+
+    // 检查 disabled 属性
+    let disabledBinding = element.getAttribute('disabled');
+    if (disabledBinding && disabledBinding.includes('{{')) {
+    let key= extractBindings(disabledBinding)[0];
+    let value= element.getAttribute('bindtap');
+    if (value!==null&&key!==null){
+      bindings.set(key,value);}
+    }
+
+    // 检查 hidden 属性
+    let hiddenBinding = element.getAttribute('hidden');
+    let key= extractBindings(disabledBinding)[0];
+    let value= element.getAttribute('bindtap');
+    if (value!==null&&key!==null){
+      bindings.set(key,value);}
+  }
+
+    // // 检查 style 属性中的 pointer-events
+    // let styleBinding = element.getAttribute('style');
+    // if (styleBinding && styleBinding.includes('{{') && styleBinding.includes('pointer-events')) {
+    //   bindings.push(...extractBindings(styleBinding));
+    // }
+    //
+    // // 检查 class 属性是否包含可能使控件不可点击的类名
+    // let classBinding = element.getAttribute('class');
+    // if (classBinding && classBinding.includes('{{')) {
+    //   bindings.push(...extractBindings(classBinding));
+    // }
+
+
+  return  bindings// 去重并返回绑定的变量
+}
+
+// 提取 `{{}}` 中的变量名
+function extractBindings(expression: string): string[] {
+  const regex = /{{(.*?)}}/g;
+  const matches = [];
+  let match;
+  while ((match = regex.exec(expression)) !== null) {
+    matches.push(match[1].trim());
+  }
+  return matches;
 }

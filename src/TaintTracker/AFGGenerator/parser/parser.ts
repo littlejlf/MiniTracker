@@ -17,7 +17,7 @@ import {
 } from "../flow";
 
 export { parse };
-
+//program 是esprima解析出来的ast
 function parse(program: ESTree.Program, options: ParserOptions): FlowProgram {
   let context = createParsingContext();
 
@@ -30,7 +30,7 @@ function parse(program: ESTree.Program, options: ParserOptions): FlowProgram {
 
   return parsedProgram;
 }
-
+// 核心方法
 function parseProgram(
   program: ESTree.Program,
   context: ParsingContext

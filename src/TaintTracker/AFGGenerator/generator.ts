@@ -7,7 +7,7 @@ export { exportAsDot } from "./exporters/dot";
 export { exportAsJson } from "./exporters/json";
 export { exportAsObject } from "./exporters/object";
 export * from "./flow";
-
+//program 是esprima解析出来的ast
 function parse(program: ESTree.Program, options?: ParserOptions): FlowProgram {
   if (!isObject(program) || !program.type) {
     throw Error("'program' must be an object with a 'type' property");

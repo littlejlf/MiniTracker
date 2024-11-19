@@ -33,7 +33,8 @@ const parseNewExpression: ExpressionParser = function (
             currentNode,
             stringify(tempVarAssignmentExpr),
             tempVarAssignmentExpr,
-            newExpression.loc
+            newExpression.loc,
+            {cate:"promisefunc",exp:newExpression}
         );
   } else {
     return parseCallExpression(

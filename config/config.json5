@@ -5,16 +5,16 @@
   "ignore_warnings": false,
   "strict_matching": true,
 
-  "enable_implicit_flow": false,
+  "enable_implicit_flow": true,
 
-  "keep_intermediate_data_to_file": false,
+  "keep_intermediate_data_to_file": true,
 
   "platform": "",
   "api_prefix": "",
   "html_suffix": "",
   "input_events": [],
   "sources_and_sinks_path": "",
-
+  "worklist_test_case_path": "D:\\Users\\Desktop\\MiniTracker\\MiniTracker\\Benchmark\\InMiniscopePaper\\pages\\page1\\page1",
 
   "baidu_config": {
     "api_prefix": "swan.",
@@ -61,5 +61,14 @@
         "银行",
         "账户",
         "账号"
+    ],
+  "bind_events":{
+  "button": {
+    "events": [
+      "bindtap"
     ]
+  }}
+
+
+
 }

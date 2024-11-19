@@ -29,3 +29,5 @@ export function copyPropertyStack(arr: Array<ESTree.Identifier>) {
 
   return copy;
 }
+
+
